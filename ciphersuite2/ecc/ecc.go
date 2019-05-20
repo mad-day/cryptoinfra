@@ -52,7 +52,7 @@ func (p *pka_driver) GenerateKeyPair(rand io.Reader) (pub,priv []byte,err error)
 func (p *pka_driver) LoadPublic(pub []byte) (ciphersuite2.PublicKey,error) {
 	x,y := elliptic.Unmarshal(p.curve,pub)
 	if x==nil { return nil,ciphersuite2.MalformedKeyError("ECC") }
-	return publicKey{x,y},nil
+	return &publicKey{x,y},nil
 }
 func (*pka_driver) LoadPrivate(priv []byte) (ciphersuite2.PrivateKey,error) { return priv,nil }
 func (p *pka_driver) DecryptKey(opaque []byte,prik ciphersuite2.PrivateKey,cb *ciphersuite2.Cipher_Buffer) error {
