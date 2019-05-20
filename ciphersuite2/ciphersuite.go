@@ -27,7 +27,6 @@ package ciphersuite2
 import (
 	"github.com/mad-day/cryptoinfra/format2"
 	"io"
-	"fmt"
 )
 
 type UnknownCipherError string
