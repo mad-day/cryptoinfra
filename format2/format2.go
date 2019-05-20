@@ -157,7 +157,6 @@ func wAEAD(w *Writer,last bool) error {
 	data := w.buffer.Next(w.buffer.Len())
 	w.cached.Data = stretch(w.cached.Data,len(data)+oh)
 	w.cached.Last = false
-	w.cached.Nonce = nil
 	w.cached.Data = w.cipher.AEAD.Seal(w.cached.Data[:0],w.cached.Nonce[:nz],data,w.cached.Nonce[nz:])
 	return w.enc.Encode(&w.cached)
 }

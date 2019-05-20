@@ -27,6 +27,7 @@ package ciphersuite2
 import (
 	"github.com/mad-day/cryptoinfra/format2"
 	"io"
+	"fmt"
 )
 
 type UnknownCipherError string
@@ -49,6 +50,13 @@ var pka_drivers = make(map[string]Pka_Driver)
 type KeyRing interface {
 	// GetKey SHOULD return the corresponding private key for a ciphertext.
 	GetKey(opaque []byte,pk_algo string) (PrivateKey,error)
+}
+type defaultKeyRing struct{
+	priv PrivateKey
+}
+func (p defaultKeyRing) GetKey(opaque []byte,pk_algo string) (PrivateKey,error) { return p.priv,nil }
+func AsKeyRing(priv PrivateKey) KeyRing {
+	return defaultKeyRing{priv}
 }
 
 // Key-Ring object for wrapped opaques.
@@ -144,6 +152,24 @@ func (e *EncryptionContext) StartEncryption() (*format2.Preamble, *format2.Ciphe
 		PK_Algo:e.PK_Algo,
 		Encoding:e.Encoding,
 	},ciph,nil
+}
+func GenerateKeyPair(rand io.Reader,pk_algo string) (pub, priv []byte, err error) {
+	pka,ok := pka_drivers[pk_algo]
+	if !ok { return nil,nil,UnknownPkaError(pk_algo) }
+	
+	return pka.GenerateKeyPair(rand)
+}
+func LoadPublicKey(pk_algo string,pub []byte) (PublicKey,error) {
+	pka,ok := pka_drivers[pk_algo]
+	if !ok { return nil,UnknownPkaError(pk_algo) }
+	
+	return pka.LoadPublic(pub)
+}
+func LoadPrivateKey(pk_algo string,priv []byte) (PrivateKey,error) {
+	pka,ok := pka_drivers[pk_algo]
+	if !ok { return nil,UnknownPkaError(pk_algo) }
+	
+	return pka.LoadPrivate(priv)
 }
 
 
