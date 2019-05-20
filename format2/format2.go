@@ -230,11 +230,12 @@ func rStream(r *Reader) error {
 	return nil
 }
 func rAEAD(r *Reader) error {
-	oh := r.cipher.AEAD.Overhead()
-	if len(r.cached.Nonce)<oh { return ENonceError }
+	nz := r.cipher.AEAD.NonceSize()
+	//oh := r.cipher.AEAD.Overhead()
+	if len(r.cached.Nonce)<nz { return ENonceError }
 	r.temp = stretch(r.temp,len(r.cached.Data))
 	var err error
-	r.temp,err = r.cipher.AEAD.Open(r.temp[:0],r.cached.Nonce[:oh],r.cached.Data,r.cached.Nonce[oh:])
+	r.temp,err = r.cipher.AEAD.Open(r.temp[:0],r.cached.Nonce[:nz],r.cached.Data,r.cached.Nonce[nz:])
 	if err==nil {
 		r.buffer.Write(r.temp)
 	}

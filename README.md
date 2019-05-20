@@ -139,4 +139,4 @@ func main() {
 
 ### Bugs.
 
-- AEAD-modes (GCM, etc) are bugged and don't work.
+- ~~AEAD-modes (GCM, etc) are bugged and don't work.~~
