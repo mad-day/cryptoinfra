@@ -30,8 +30,16 @@ package stretch
 
 import (
 	"github.com/mad-day/cryptoinfra/ciphersuite2"
-	"golang.org/x/crypto/sha3"
 	"golang.org/x/crypto/salsa20/salsa"
+	
+	/*
+	MD5 is cryptographically broken, but still suitable for Key-Generation.
+	For that case it is better than a completely non-cryptographic hash
+	function like CRC, FNV-1a, Murmur or Cityhash.
+	*/
+	"crypto/md5"
+	
+	"golang.org/x/crypto/blake2b"
 )
 
 var sigma16 [16]byte
@@ -42,7 +50,6 @@ func init() {
 	s  = "Expand 32-bytes key!"
 	for i := range sigma32 { sigma32[i] = s[i%len(s)] }
 }
-
 
 func write(raw []byte,cb *ciphersuite2.Cipher_Buffer) {
 	a1 := copy(cb.Key,raw)
@@ -89,16 +96,22 @@ func expand(in, out []byte) {
 		if begin < 0 { begin = 0 }
 	}
 	
+	if end <= len(in) { return }
+	
 	l := end-begin
 	
-	// Lemma: l<16
+	// Lemma: l<16 and end > len(in)
 	if l>0 {
+		var rest []byte
 		if begin<16 {
-			if end <= len(in) { return }
-			sha3.ShakeSum256(out[begin:end],out[:begin])
+			rest = in[:begin]
 		} else {
-			sha3.ShakeSum256(out[begin:end],out[begin-16:begin])
+			rest = in[begin-16:begin]
 		}
+		
+		/* This is the only place, where we use MD5. */
+		h := md5.Sum(rest)
+		copy(out[begin:end],h[:])
 	}
 }
 
@@ -107,7 +120,7 @@ func shrink(in, out []byte) {
 	l := (len(out)+63)/64
 	p := len(in)/l
 	for i := 1; i<l ; i++ {
-		dig := sha3.Sum512(in[:p])
+		dig := blake2b.Sum512(in[:p])
 		copy(out,dig[:])
 		out = out[64:]
 		in  = in[p:]
@@ -118,17 +131,17 @@ func shrink(in, out []byte) {
 // len(in)>len(out) AND len(out)<=64
 func shrink_last(in, out []byte) {
 	i := len(out)
-	if i<=28 {
-		dig := sha3.Sum224(in)
+	if i<=16 {
+		dig := md5.Sum(in)
 		copy(out,dig[:])
 	} else if i<=32 {
-		dig := sha3.Sum256(in)
+		dig := blake2b.Sum256(in)
 		copy(out,dig[:])
 	} else if i<=48 {
-		dig := sha3.Sum384(in)
+		dig := blake2b.Sum384(in)
 		copy(out,dig[:])
 	} else if i<=64 {
-		dig := sha3.Sum512(in)
+		dig := blake2b.Sum512(in)
 		copy(out,dig[:])
 	} else {
 		panic("Output chunk too big")
@@ -143,18 +156,12 @@ func convert(buf []byte) {
 		copy(buf[:64],b1[:])
 		buf = buf[64:]
 	}
-	if len(buf)>=32 {
-		dig := sha3.Sum256(buf)
-		copy(buf,dig[:])
-		buf = buf[32:]
-	}
-	if len(buf)>=28 {
-		dig := sha3.Sum224(buf)
-		copy(buf,dig[:])
-		buf = buf[28:]
-	}
 	if len(buf)>0 {
-		sha3.ShakeSum256(buf,buf)
+		/*
+		We use the cut-Off BLAKE2b Hash as last block.
+		*/
+		*b1 = blake2b.Sum512(buf)
+		copy(buf,b1[:])
 	}
 }
 
