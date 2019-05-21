@@ -61,7 +61,7 @@ func (p *pka_driver) DecryptKey(opaque []byte,prik ciphersuite2.PrivateKey,cb *c
 	x,y := elliptic.Unmarshal(p.curve,opaque)
 	if x==nil { return ciphersuite2.MalformedEncryptedKeyError("ECC") }
 	x,y = p.curve.ScalarMult(x,y,rp)
-	stretch.DeriveKeyHash(elliptic.Marshal(p.curve,x,y),cb)
+	stretch.EccDerive(p.curve,x,y,cb)
 	return nil
 }
 func (p *pka_driver) EncryptKey(rand io.Reader,pubk ciphersuite2.PublicKey,cb *ciphersuite2.Cipher_Buffer) (opaque []byte,err error) {
@@ -72,7 +72,7 @@ func (p *pka_driver) EncryptKey(rand io.Reader,pubk ciphersuite2.PublicKey,cb *c
 	temp,tx,ty,err = elliptic.GenerateKey(p.curve,rand)
 	if err!=nil { return }
 	x,y = p.curve.ScalarMult(rp.x,rp.y,temp)
-	stretch.DeriveKeyHash(elliptic.Marshal(p.curve,x,y),cb)
+	stretch.EccDerive(p.curve,x,y,cb)
 	opaque = elliptic.Marshal(p.curve,tx,ty)
 	return
 }
