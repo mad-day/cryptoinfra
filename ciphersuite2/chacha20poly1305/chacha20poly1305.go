@@ -22,17 +22,11 @@ SOFTWARE.
 
 
 /*
-Implements AES (128,192,256) in various modes of operations.
+Implements the ChaCha20-Poly1305 AEAD as specified in RFC 7539, and its extended nonce variant XChaCha20-Poly1305.
 
 	Encoding = (
 		"chacha20-poly1305"
 		"xchacha20-poly1305"
-	) + (
-		"/gcm"
-		"/cbc"
-		"/cfb"
-		"/ctr"
-		"/ofb"
 	)
 */
 package chacha20poly1305
