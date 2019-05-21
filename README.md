@@ -136,6 +136,7 @@ func main() {
 }
 ```
 
+**WARNING: ciphersuite2 is subject to changes (still).**
 
 ### Bugs.
 
