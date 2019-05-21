@@ -136,7 +136,7 @@ func main() {
 }
 ```
 
-**WARNING: ciphersuite2 is subject to changes (still).**
+**WARNING: ciphersuite2 is subject to changes, rendering Many things (including Ciphertexts) incompatible. (still).**
 
 ### Bugs.
 
