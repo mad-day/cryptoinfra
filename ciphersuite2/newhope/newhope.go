@@ -22,13 +22,13 @@ SOFTWARE.
 
 
 /*
-This package implements support for curve25519
+This package implements support for newhope
 
 	PK_Algo = (
 		"newhope"
 	)
 */
-package pk25519
+package newhope
 
 import (
 	"github.com/mad-day/cryptoinfra/ciphersuite2"
