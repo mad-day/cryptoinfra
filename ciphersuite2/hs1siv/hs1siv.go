@@ -28,7 +28,6 @@ Implements the HS1-SIV Authenticated Cipher.
 		"hs1siv"
 	)
 */
-
 package hs1siv
 
 import (

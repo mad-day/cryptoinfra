@@ -28,7 +28,6 @@ Implements the MORUS-1280-256 Authenticated Cipher.
 		"morus-1280-256"
 	)
 */
-
 package morus
 
 import (
