@@ -44,6 +44,7 @@ import (
 	"github.com/mad-day/cryptoinfra/ciphersuite2"
 	
 	"github.com/mad-day/cryptoinfra/format2"
+	"github.com/mad-day/go-various-ciphers/crypto/eax"
 	
 	"fmt"
 )
@@ -56,6 +57,7 @@ const (
 	CFB
 	CTR
 	OFB
+	EAX
 )
 
 
@@ -71,6 +73,13 @@ var _ ciphersuite2.Cipher_Driver = (*BlockCipher)(nil)
 func mkbytes(i int) []byte {
 	if i==0 { return nil }
 	return make([]byte,i)
+}
+
+func supportsEax(bz int) bool {
+	switch (bz * 8) {
+	case 64,128,160,192,224,256,320,384,448,512,768,1024,2048: return true
+	}
+	return false
 }
 
 
@@ -106,6 +115,7 @@ func (c *BlockCipher) crypt(b *ciphersuite2.Cipher_Buffer,en bool) (*format2.Cip
 		obj.Stream = cipher.NewCTR(block,b.IV)
 	case OFB:
 		obj.Stream = cipher.NewOFB(block,b.IV)
+	case EAX: obj.AEAD,err = eax.New(block,block.BlockSize())
 	default: err = fmt.Errorf("illegal mode 0x%x",c.Mode)
 	}
 	if err!=nil { obj = nil }
@@ -124,6 +134,9 @@ func (c *BlockCipher) derive(mode int,noiv bool) *BlockCipher {
 func (c *BlockCipher) RegisterVariants(name string) {
 	if c.IV==16 {
 		ciphersuite2.RegisterCipher(name+"/gcm",c.derive(GCM,true))
+	}
+	if supportsEax(c.IV) {
+		ciphersuite2.RegisterCipher(name+"/eax",c.derive(EAX,true))
 	}
 	ciphersuite2.RegisterCipher(name+"/cbc",c.derive(CBC,false))
 	ciphersuite2.RegisterCipher(name+"/cfb",c.derive(CFB,false))
