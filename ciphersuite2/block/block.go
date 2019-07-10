@@ -33,6 +33,7 @@ The GCM mode is only available for ciphers with 128-bit block size.
 		"/cfb"
 		"/ctr"
 		"/ofb"
+		"/eax"
 	)
 
 */
